@@ -62,10 +62,18 @@ const search = document.querySelector('.js-search');
 const list = document.querySelector('.js-list');
 search.addEventListener('submit', onSearch);
 
+navigator.geolocation.getCurrentPosition(({ coords }) => {
+  const { latitude, longitude } = coords;
+  getWeather(`${latitude},${longitude}`, 3)
+    .then(data => (list.innerHTML = createMarkup(data.forecast.forecastday)))
+    .catch(err => console.log(err));
+});
+
 function onSearch(evt) {
   evt.preventDefault();
 
   const { query, days } = evt.currentTarget.elements;
+
   getWeather(query.value, days.value)
     .then(data => (list.innerHTML = createMarkup(data.forecast.forecastday)))
     .catch(err => console.log(err));
@@ -74,7 +82,8 @@ function onSearch(evt) {
 function getWeather(city, days) {
   //http://api.weatherapi.com/v1/forecast.json?key=2a8d1a66318246e9b1c81420240611&q=Paris&days=5
   const BASE_URL = 'http://api.weatherapi.com/v1';
-  const API_KEY = '2a8d1a66318246e9b1c81420240611';
+  const END_POINT = '/forecast.json';
+  const API_KEY = '996939ba8c804529aee100853241011';
 
   const params = new URLSearchParams({
     key: API_KEY,
@@ -83,8 +92,7 @@ function getWeather(city, days) {
     lang: 'uk',
   });
 
-  console.log(params);
-  return fetch(`${BASE_URL}/forecast.json?${params}`).then(resp => {
+  return fetch(`${BASE_URL}${END_POINT}?${params}`).then(resp => {
     if (!resp.ok) {
       throw new Error(resp.statusText);
     }
